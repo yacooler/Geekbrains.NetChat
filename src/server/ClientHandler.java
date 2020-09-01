@@ -6,39 +6,43 @@ import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
-public class ClientHandler {
+public class ClientHandler{
     private AuthService.Record record;
     private Server server;
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
 
-    public ClientHandler(Server server, Socket socket) {
+    public ClientHandler(Server server, Socket socket, ExecutorService executorService) {
         try {
             this.server = server;
             this.socket = socket;
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        //Обмен авторизационными сообщениями
-                        doAuthorization();
+            //Сабмитим задачу в сервис
+            executorService.submit(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            //Обмен авторизационными сообщениями
+                            doAuthorization();
 
-                        //Обработка сообщений от клиента
-                        handleMessages();
+                            //Обработка сообщений от клиента
+                            handleMessages();
 
-                    } catch (IOException|SQLException e) {
-                        e.printStackTrace();
-                    } finally {
-                        closeConnection();
+                        } catch (IOException | SQLException e) {
+                            e.printStackTrace();
+                        } finally {
+                            closeConnection();
+                        }
                     }
-                }
-            })
-                    .start();
+                });
+
+
 
         } catch (IOException e) {
            throw new RuntimeException("Client handler was not created");
@@ -143,4 +147,5 @@ public class ClientHandler {
     public int hashCode() {
         return Objects.hash(record, server, socket, in, out);
     }
+
 }

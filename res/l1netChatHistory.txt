@@ -9,3 +9,6 @@ System:User has left the chat:Klaus
 System:User has left the chat:Nicky
 System:User has left the chat:Kelvin
 Barboss:newest test
+System:New user logged in:Kelvin
+Kelvin:test
+Barboss:test
