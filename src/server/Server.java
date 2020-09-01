@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.sql.*;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
 
@@ -18,7 +20,7 @@ public class Server {
     private AuthService authService;
     private Set<ClientHandler> clientHandlers;
     private UserDBService userDBService;
-
+    private ExecutorService executorService = Executors.newCachedThreadPool();
 
     public Server() {
         this(PORT);
@@ -39,7 +41,7 @@ public class Server {
                 System.out.println("Waiting for a connection...");
                 Socket socket = serverSocket.accept();
                 System.out.println("Client connected: " + socket);
-                new ClientHandler(this, socket);
+                new ClientHandler(this, socket, executorService);
             }
         }
 
