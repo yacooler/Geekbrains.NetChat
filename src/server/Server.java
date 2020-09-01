@@ -53,6 +53,7 @@ public class Server {
         finally {
             //Закрываем коннект
             DataBaseConnection.closeConnection();
+            executorService.shutdown();
         }
     }
 
