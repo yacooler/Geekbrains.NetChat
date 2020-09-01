@@ -1,3 +1,11 @@
 Строка раз
 строка два
-сьолка триBarboss:Еще строкаBarboss:Может даже все будет норм
+System:New user logged in:Nicky
+System:New user logged in:Klaus
+Nicky:test
+Nicky:123
+Nicky:History
+System:User has left the chat:Klaus
+System:User has left the chat:Nicky
+System:User has left the chat:Kelvin
+Barboss:newest test

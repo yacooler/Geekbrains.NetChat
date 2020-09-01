@@ -29,7 +29,8 @@ public class ClientHistoryServiceFileImpl implements ClientHistoryService {
         if (fileWriter == null) {
             fileWriter = new FileWriter(fileHistory, true);
         }
-        fileWriter.write(row);
+
+        fileWriter.write(row + "\n");
         fileWriter.flush();
     }
 

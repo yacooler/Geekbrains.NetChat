@@ -16,7 +16,7 @@ public class Client implements Authorizable {
     private DataOutputStream out;
     private ChatFrame chatFrame;
     private String userName;
-    private ClientHistoryService clientHistoryService = new ClientHistoryServiceFileImpl();
+
 
 
     public Client(int port) {
@@ -40,9 +40,6 @@ public class Client implements Authorizable {
 
         //Основное окно чата. Попробую лямбды
         chatFrame = new ChatFrame("Клиент чата " + userName, message -> sendChatMessage(new ChatMessage(userName, message)));
-
-        ClientHistoryLoader loader = new ClientHistoryLoader(clientHistoryService, chatFrame.getTextArea(), login);
-
     }
 
     /**
@@ -56,9 +53,14 @@ public class Client implements Authorizable {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
+                try (ClientHistoryService clientHistoryService = new ClientHistoryServiceFileImpl()) {
+
+                    new ClientHistoryLoader(clientHistoryService, chatFrame.getTextArea(), login);
+
+                    String stringMessage;
 
                     while (true) {
+                        stringMessage = "";
 
                         ChatMessage message = receiveChatMessage();
 
@@ -77,14 +79,19 @@ public class Client implements Authorizable {
                             //Приватное сообщение бывает входящим и исходящим
                             if (!message.getSender().equals(userName)) {
                                 chatFrame.prepareMessage(ChatMessage.MESSAGE_WISP + " " + message.getSender() + " ");
-                                pushChatMessage("PM from " + message.getSender() + ":" + message.getMessage());
+                                stringMessage = "PM from " + message.getSender() + ":" + message.getMessage();
+
                             } else {
-                                pushChatMessage("PM to " + message.getRecipient() + ":" + message.getMessage());
+                                stringMessage = "PM to " + message.getRecipient() + ":" + message.getMessage();
                             }
                         } else {
-                            pushChatMessage(message.getSender() + ":" + message.getMessage());
+                            stringMessage = message.getSender() + ":" + message.getMessage();
                         }
 
+                        if (!stringMessage.isBlank()){
+                            chatFrame.pushMessage(stringMessage);
+                            clientHistoryService.saveHistoryRow(stringMessage);
+                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -134,11 +141,6 @@ public class Client implements Authorizable {
 
     private ChatMessage receiveChatMessage() throws IOException{
         return new ChatMessage(in.readUTF());
-    }
-
-    private void pushChatMessage(String message) throws IOException{
-        chatFrame.pushMessage(message);
-        clientHistoryService.saveHistoryRow(message);
     }
 
 }
